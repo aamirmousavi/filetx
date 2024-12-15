@@ -13,18 +13,18 @@ type FileOperation struct {
 	originalData   []byte
 }
 
-type FileTransaction struct {
+type Tx struct {
 	operations []*FileOperation
 	committed  bool
 }
 
-func Begin() (*FileTransaction, error) {
-	return &FileTransaction{
+func Begin() (*Tx, error) {
+	return &Tx{
 		operations: []*FileOperation{},
 	}, nil
 }
 
-func (tx *FileTransaction) Create(filePath string) (*FileOperation, error) {
+func (tx *Tx) Create(filePath string) (*FileOperation, error) {
 	op := &FileOperation{
 		filePath: filePath,
 		buffer:   new(bytes.Buffer),
@@ -46,7 +46,7 @@ func (op *FileOperation) Write(data []byte) (int, error) {
 	return op.buffer.Write(data)
 }
 
-func (tx *FileTransaction) Commit() error {
+func (tx *Tx) Commit() error {
 	if tx.committed {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (tx *FileTransaction) Commit() error {
 	return nil
 }
 
-func (tx *FileTransaction) Rollback() error {
+func (tx *Tx) Rollback() error {
 	if tx.committed {
 		return nil
 	}
@@ -82,7 +82,7 @@ func (tx *FileTransaction) Rollback() error {
 	return nil
 }
 
-func (tx *FileTransaction) Close() error {
+func (tx *Tx) Close() error {
 	if !tx.committed {
 		if err := tx.Rollback(); err != nil {
 			return err
